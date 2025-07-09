@@ -1,0 +1,42 @@
+<!-- Simple Visualforce page that embeds a Hex dashboard for an Account -->
+<!-- Uses standard Account controller to automatically get account context -->
+<!-- Removes Salesforce header, sidebar, and styling for clean embedding -->
+<apex:page standardController="Account" showHeader="false" sidebar="false" standardStylesheets="false">
+    
+    <!-- Import Hex's official embed styles for consistent appearance -->
+    <link rel="stylesheet" href="https://static.hex.site/embed/embedStyles.css" />
+    
+    <!-- Main container using Hex's standard embed class -->
+    <div class="hex-embed">
+        <!-- Iframe that will display the Hex dashboard -->
+        <!-- Sandbox attributes provide security while allowing necessary functionality -->
+        <iframe id="hexFrame" width="800" height="600" style="border: none;" 
+                allow="storage-access-api"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms">
+        </iframe>
+        
+        <!-- Hex branding link (required for embedded dashboards) -->
+        <a href="https://hex.tech/?embed" target="_blank">
+            <img src="https://static.hex.site/embed/hex-logo-embed.png" alt="Hex - a modern data workspace"/>
+        </a>
+    </div>
+    
+    <script>
+        // Get the account name from the standard controller
+        // JSENCODE prevents XSS by properly escaping the account name
+        var accountName = '{!JSENCODE(Account.Name)}';
+        
+        // Base URL for the Hex dashboard (replace with your actual project URL)
+        var baseUrl = 'https://app.hex.tech/YOUR_HEX_WORKSPACE/app/YOUR_PROJECT_ID/latest';
+        
+        // Build the complete URL with account name parameter and embed flag
+        // The account name can be used within Hex for filtering or display
+        var url = baseUrl + '?_account_name="' + accountName + '"&embedded=true';
+        
+        // Debug logging to help troubleshoot URL generation
+        console.log('Generated URL:', url);
+        
+        // Set the iframe source to load the Hex dashboard
+        document.getElementById('hexFrame').src = url;
+    </script>
+</apex:page>
