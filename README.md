@@ -64,6 +64,3 @@ Add these URLs:
 - `https://static.hex.site`
 - `https://accounts.google.com`
 
-## Summary
-
-Both embedding methods provide flexible integration options between Hex and Salesforce, with private embedding offering simpler setup and signed embedding providing enhanced security through API-generated URLs. Choose the method that best fits your organization's security requirements and technical capabilities.
