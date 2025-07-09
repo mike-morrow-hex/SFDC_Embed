@@ -1,0 +1,174 @@
+<!-- Visualforce page that displays an embedded Hex analytics dashboard -->
+<!-- Uses custom controller and removes standard Salesforce styling for clean embedding -->
+<apex:page controller="HexEmbeddingControllerDynamic" showHeader="false" standardStylesheets="false">
+    <html>
+        <head>
+            <title>Hex Project Embedding</title>
+            <style>
+                /* Reset default styling and set up basic layout */
+                body {
+                    margin: 0;
+                    padding: 20px;
+                    font-family: Arial, sans-serif;
+                    background-color: #f5f5f5;
+                }
+                
+                /* Main container for the entire page */
+                .container {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    overflow: hidden;
+                }
+                
+                /* Header section styling */
+                .header {
+                    background-color: #2c3e50;
+                    color: white;
+                    padding: 20px;
+                    text-align: center;
+                }
+                
+                /* Controls section (contains refresh button) */
+                .controls {
+                    padding: 15px;
+                    background-color: #ecf0f1;
+                    border-bottom: 1px solid #bdc3c7;
+                }
+                
+                /* Button styling */
+                .btn {
+                    background-color: #3498db;
+                    color: white;
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                }
+                
+                /* Button hover state */
+                .btn:hover {
+                    background-color: #2980b9;
+                }
+                
+                /* Button disabled state */
+                .btn:disabled {
+                    background-color: #95a5a6;
+                    cursor: not-allowed;
+                }
+                
+                /* Error message styling */
+                .error {
+                    background-color: #e74c3c;
+                    color: white;
+                    padding: 15px;
+                    margin: 10px 0;
+                    border-radius: 4px;
+                }
+                
+                /* Loading message styling */
+                .loading {
+                    text-align: center;
+                    padding: 20px;
+                    color: #7f8c8d;
+                }
+                
+                /* Container for the embedded iframe */
+                .embed-container {
+                    position: relative;
+                    height: 800px;
+                    overflow: hidden;
+                }
+                
+                /* Iframe styling for full container coverage */
+                .embed-frame {
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    display: block;
+                }
+                
+                /* Message when no URL is available */
+                .no-url {
+                    text-align: center;
+                    padding: 40px;
+                    color: #7f8c8d;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <!-- Page header with title and description -->
+                <div class="header">
+                    <h1>Hex Project Dashboard</h1>
+                    <p>Embedded analytics powered by Hex</p>
+                </div>
+                
+                <!-- Controls section with refresh button -->
+                <div class="controls">
+                    <apex:form >
+                        <!-- Refresh button that calls the controller's refreshUrl method -->
+                        <!-- Button is disabled when loading to prevent multiple simultaneous requests -->
+                        <apex:commandButton value="Refresh Dashboard" 
+                                          action="{!refreshUrl}" 
+                                          styleClass="btn"
+                                          disabled="{!isLoading}"
+                                          reRender="embedContent"/>
+                        
+                        <!-- Status indicator that shows when refresh is in progress -->
+                        <apex:actionStatus id="refreshStatus">
+                            <apex:facet name="start">
+                                <span style="margin-left: 10px; color: #7f8c8d;">Refreshing...</span>
+                            </apex:facet>
+                        </apex:actionStatus>
+                    </apex:form>
+                </div>
+                
+                <!-- Main content area that gets re-rendered when refresh is clicked -->
+                <apex:outputPanel id="embedContent">
+                    
+                    <!-- Loading state: shown when isLoading is true -->
+                    <apex:outputPanel rendered="{!isLoading}">
+                        <div class="loading">
+                            <p>Loading dashboard...</p>
+                        </div>
+                    </apex:outputPanel>
+                    
+                    <!-- Error state: shown when there's an error message -->
+                    <apex:outputPanel rendered="{!NOT(ISBLANK(errorMessage))}">
+                        <div class="error">
+                            <strong>Error:</strong> {!errorMessage}
+                        </div>
+                    </apex:outputPanel>
+                    
+                    <!-- Success state: shown when not loading, no error, and hexUrl exists -->
+                    <!-- This is where the actual Hex dashboard gets embedded -->
+                    <apex:outputPanel rendered="{!AND(NOT(isLoading), ISBLANK(errorMessage), NOT(ISBLANK(hexUrl)))}">
+                        <div class="embed-container">
+                            <!-- Iframe that displays the Hex dashboard -->
+                            <!-- allowfullscreen enables fullscreen mode for charts -->
+                            <!-- loading="lazy" improves performance by loading only when needed -->
+                            <iframe src="{!hexUrl}" 
+                                    class="embed-frame"
+                                    allowfullscreen="true"
+                                    loading="lazy">
+                            </iframe>
+                        </div>
+                    </apex:outputPanel>
+                    
+                    <!-- No URL state: shown when not loading, no error, but no URL available -->
+                    <!-- This indicates a configuration issue -->
+                    <apex:outputPanel rendered="{!AND(NOT(isLoading), ISBLANK(errorMessage), ISBLANK(hexUrl))}">
+                        <div class="no-url">
+                            <p>No dashboard URL available. Please check your configuration.</p>
+                        </div>
+                    </apex:outputPanel>
+                    
+                </apex:outputPanel>
+            </div>
+        </body>
+    </html>
+</apex:page>
